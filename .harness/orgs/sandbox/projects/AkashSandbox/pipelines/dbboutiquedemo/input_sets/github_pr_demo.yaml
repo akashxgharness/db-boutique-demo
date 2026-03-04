@@ -1,0 +1,27 @@
+inputSet:
+  name: github pr demo
+  identifier: github_pr_demo
+  orgIdentifier: sandbox
+  projectIdentifier: AkashSandbox
+  pipeline:
+    identifier: dbboutiquedemo
+    properties:
+      ci:
+        codebase:
+          build:
+            type: PR
+            spec:
+              number: <+trigger.prNumber>
+    stages:
+      - stage:
+          identifier: Deploy_to_Dev
+          type: Deployment
+          spec:
+            service:
+              serviceInputs:
+                serviceDefinition:
+                  type: Kubernetes
+                  spec:
+                    artifacts:
+                      primary:
+                        primaryArtifactRef: frontendartifact
