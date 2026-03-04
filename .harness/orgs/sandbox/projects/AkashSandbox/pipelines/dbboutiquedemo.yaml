@@ -69,6 +69,85 @@ pipeline:
                         dockerfile: services/checkout/Dockerfile
                         context: services/checkout
     - stage:
+        name: Approval Gate
+        identifier: Approval_Gate
+        description: ""
+        type: Approval
+        spec:
+          execution:
+            steps:
+              - step:
+                  name: ServiceNow - Create Ticket
+                  identifier: ServiceNow_Create_Ticket
+                  type: ServiceNowCreate
+                  timeout: 5m
+                  spec:
+                    connectorRef: akashSNOW
+                    ticketType: change_request
+                    fields:
+                      - name: description
+                        value: |-
+                          Change Summary: Promote <+service.name> to production 
+                          Pipeline Name: <+pipeline.name> 
+                          Artifact: <+artifact.image> 
+                          Deployment URL: <+pipeline.executionUrl> 
+                          Requested by <+pipeline.triggeredBy.name>
+                      - name: short_description
+                        value: Begin promotion of <+service.name> to dev
+                    createType: Normal
+              - step:
+                  name: ServiceNow Approval
+                  identifier: ServiceNow_Approval
+                  type: ServiceNowApproval
+                  timeout: 1d
+                  spec:
+                    approvalCriteria:
+                      type: KeyValues
+                      spec:
+                        matchAnyCondition: true
+                        conditions:
+                          - key: state
+                            operator: equals
+                            value: Implement
+                    rejectionCriteria:
+                      type: KeyValues
+                      spec:
+                        matchAnyCondition: true
+                        conditions: []
+                    connectorRef: akashSNOW
+                    ticketNumber: <+pipeline.stages.Deploy_to_Dev.spec.execution.steps.Change_Mgmt.steps.ServiceNow_Create_Ticket.ticket.ticketNumber>
+                    retryInterval: 1m
+                    ticketType: change_request
+              - step:
+                  name: ServiceNow - Update Ticket
+                  identifier: ServiceNow_Update_Ticket
+                  type: ServiceNowUpdate
+                  timeout: 5m
+                  spec:
+                    useServiceNowTemplate: false
+                    connectorRef: akashSNOW
+                    ticketType: change_request
+                    ticketNumber: <+pipeline.stages.Deploy_to_Dev.spec.execution.steps.Change_Mgmt.steps.ServiceNow_Create_Ticket.ticket.ticketNumber>
+                    fields:
+                      - name: implementation_plan
+                        value: |-
+                          Harness Details:
+                            Release: <+artifacts.primary.imagePath>:<+artifacts.primary.tag>
+                            Deployment URL: <+pipeline.executionUrl>
+                            Harness Execution: <+pipeline.executionId>
+                      - name: work_notes
+                        value: |-
+                          <+env.name> gates passed. 
+                          Successfully deployed <+artifacts.primary.imagePath>:<+artifacts.primary.tag> for the <+service.name> service to <+env.name> 
+                          Pipeline Execution: <+pipeline.executionUrl> 
+                      - name: backout_plan
+                        value: Harness Automatic Rollback.
+                      - name: assignment_group
+                        value: CAB Approval
+                      - name: justification
+                        value: Standard Change Type.
+        tags: {}
+    - stage:
         name: Deploy to Dev
         identifier: Deploy_to_Dev
         description: ""
