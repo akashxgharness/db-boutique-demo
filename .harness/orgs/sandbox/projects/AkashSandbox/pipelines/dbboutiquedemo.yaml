@@ -40,9 +40,7 @@ pipeline:
                         connectorRef: Akash_Docker_Hub
                         repo: akashxg/eks-config-ui
                         tags:
-                          - 1.0.<+pipeline.sequenceId>
-                          - stable
-                          - canary
+                          - frontend
                         caching: true
                         dockerfile: services/frontend/Dockerfile
                         context: services/frontend
@@ -54,7 +52,7 @@ pipeline:
                         connectorRef: Akash_Docker_Hub
                         repo: akashxg/eks-config-ui
                         tags:
-                          - 1.0<+pipeline.sequenceId>
+                          - catalog
                         caching: true
                         dockerfile: services/productcatalog/Dockerfile
                         context: services/productcatalog
@@ -66,7 +64,7 @@ pipeline:
                         connectorRef: Akash_Docker_Hub
                         repo: akashxg/eks-config-ui
                         tags:
-                          - 1.0<+pipeline.sequenceId>
+                          - checkout
                         caching: true
                         dockerfile: services/checkout/Dockerfile
                         context: services/checkout
