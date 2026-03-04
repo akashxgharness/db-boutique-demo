@@ -167,7 +167,7 @@ pipeline:
                     useServiceNowTemplate: false
                     connectorRef: akashSNOW
                     ticketType: change_request
-                    ticketNumber: <+pipeline.stages.Deploy_to_Dev.spec.execution.steps.Change_Mgmt.steps.ServiceNow_Create_Ticket.ticket.ticketNumber>
+                    ticketNumber: <+pipeline.stages.Deploy_to_Dev.spec.execution.steps.ServiceNow_Create_Ticket.ticket.ticketNumber>
                     fields:
                       - name: implementation_plan
                         value: |-
