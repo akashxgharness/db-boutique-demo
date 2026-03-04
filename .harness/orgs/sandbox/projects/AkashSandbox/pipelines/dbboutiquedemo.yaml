@@ -1,0 +1,46 @@
+pipeline:
+  name: db-boutique-demo
+  identifier: dbboutiquedemo
+  projectIdentifier: AkashSandbox
+  orgIdentifier: sandbox
+  tags: {}
+  properties:
+    ci:
+      codebase:
+        connectorRef: akashHarnessGitHub
+        repoName: db-boutique-demo
+        build: <+input>
+  stages:
+    - stage:
+        name: Build
+        identifier: Build
+        description: ""
+        type: CI
+        spec:
+          cloneCodebase: true
+          caching:
+            enabled: true
+            override: false
+          buildIntelligence:
+            enabled: true
+          platform:
+            os: Linux
+            arch: Amd64
+          runtime:
+            type: Cloud
+            spec: {}
+          execution:
+            steps:
+              - step:
+                  type: BuildAndPushDockerRegistry
+                  name: build stable frontend
+                  identifier: build_stable_frontend
+                  spec:
+                    connectorRef: Akash_Docker_Hub
+                    repo: akashxg/myfirstrepo
+                    tags:
+                      - 1.0.<+pipeline.sequenceId>
+                      - stable
+                      - canary
+                    caching: true
+                    dockerfile: services/frontend/Dockerfile
