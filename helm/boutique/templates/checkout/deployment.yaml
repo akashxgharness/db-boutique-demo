@@ -4,6 +4,8 @@ kind: Deployment
 metadata:
   name: {{ include "boutique.fullname" . }}-checkout
   namespace: {{ .Values.namespace }}
+  annotations:
+    harness.io/direct-apply: "true"
   labels:
     {{- include "boutique.checkoutSelectorLabels" . | nindent 4 }}
 spec:

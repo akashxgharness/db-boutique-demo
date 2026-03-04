@@ -4,6 +4,8 @@ kind: Deployment
 metadata:
   name: {{ include "boutique.fullname" . }}-productcatalog
   namespace: {{ .Values.namespace }}
+  annotations:
+    harness.io/direct-apply: "true"
   labels:
     {{- include "boutique.productcatalogSelectorLabels" . | nindent 4 }}
 spec:
