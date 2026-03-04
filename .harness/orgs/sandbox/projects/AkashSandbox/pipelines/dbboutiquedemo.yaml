@@ -84,7 +84,9 @@ pipeline:
                 type: Kubernetes
                 spec:
                   artifacts:
-                    primary: {}
+                    primary:
+                      primaryArtifactRef: <+input>
+                      sources: <+input>
           environment:
             environmentRef: dev1
             deployToAll: false
