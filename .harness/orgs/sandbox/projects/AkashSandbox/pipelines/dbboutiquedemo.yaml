@@ -45,6 +45,7 @@ pipeline:
                           - canary
                         caching: true
                         dockerfile: services/frontend/Dockerfile
+                        context: services/frontend
                   - step:
                       type: BuildAndPushDockerRegistry
                       name: build product catalog
@@ -56,6 +57,7 @@ pipeline:
                           - 1.0<+pipeline.sequenceId>
                         caching: true
                         dockerfile: services/productcatalog/Dockerfile
+                        context: services/productcatalog
                   - step:
                       type: BuildAndPushDockerRegistry
                       name: build checkout
@@ -67,3 +69,4 @@ pipeline:
                           - 1.0<+pipeline.sequenceId>
                         caching: true
                         dockerfile: services/checkout/Dockerfile
+                        context: services/checkout
