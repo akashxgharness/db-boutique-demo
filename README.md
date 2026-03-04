@@ -1,14 +1,20 @@
 # Boutique Microservices
 
-A minimal Kubernetes microservices application (frontend, productcatalog, checkout) deployable via Helm.
+A minimal Kubernetes microservices application (frontend, productcatalog, checkout) with canary deployment and NGINX traffic splitting. The UI shows live canary traffic split.
 
 ## Image Configuration
 
 | Service | Image | Tag |
 |---------|-------|-----|
-| Frontend | akashxg/eks-config-ui | frontend |
+| Frontend (stable + canary) | akashxg/eks-config-ui | frontend |
 | Product Catalog | akashxg/eks-config-ui | catalog |
 | Checkout | akashxg/eks-config-ui | checkout |
+
+## Canary Deployment
+
+The chart deploys two frontend deployments (stable + canary) with NGINX Ingress splitting traffic. The UI at `/` shows the live traffic split and which variant served each request.
+
+- **canary.weight** (default: 20) - Percentage of traffic to canary. Override via `--set canary.weight=N` to match Harness pipeline.
 
 ## Microservices
 
@@ -50,8 +56,12 @@ Then open http://boutique.local in a browser.
 
 | Value | Default | Description |
 |-------|---------|-------------|
-| `frontend.image.repository` | `akashxg/eks-config-ui` | Frontend image |
-| `frontend.image.tag` | `frontend` | Frontend image tag |
+| `canary.enabled` | `true` | Deploy canary frontend and NGINX canary ingress |
+| `canary.weight` | `20` | NGINX canary traffic % (override to match Harness) |
+| `stable.image.repository` | `akashxg/eks-config-ui` | Stable frontend image |
+| `stable.image.tag` | `frontend` | Stable frontend tag |
+| `canary.image.repository` | `akashxg/eks-config-ui` | Canary frontend image |
+| `canary.image.tag` | `frontend` | Canary frontend tag |
 | `productcatalog.image.repository` | `akashxg/eks-config-ui` | Product catalog image |
 | `productcatalog.image.tag` | `catalog` | Product catalog image tag |
 | `checkout.image.repository` | `akashxg/eks-config-ui` | Checkout image |
