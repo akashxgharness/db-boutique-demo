@@ -1,0 +1,18 @@
+{{- if .Values.canary.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "boutique.fullname" . }}-frontend-canary
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "boutique.frontendCanarySelectorLabels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.frontend.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "boutique.frontendCanarySelectorLabels" . | nindent 4 }}
+{{- end }}

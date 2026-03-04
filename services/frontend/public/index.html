@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Boutique - Canary Deployment Dashboard</title>
+  <style>
+    :root {
+      --stable: #2563eb;
+      --canary: #16a34a;
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    h1 {
+      font-size: 1.75rem;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+    .subtitle { color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .card h2 { font-size: 1rem; margin-bottom: 1rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .traffic-bar {
+      display: flex;
+      height: 32px;
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 1rem 0;
+    }
+    .traffic-stable { background: var(--stable); transition: width 0.3s ease; }
+    .traffic-canary { background: var(--canary); transition: width 0.3s ease; }
+    .traffic-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+    }
+    .label-stable { color: var(--stable); }
+    .label-canary { color: var(--canary); }
+    .phase-badge {
+      display: inline-block;
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    .phase-canary { background: rgba(22,163,74,0.2); color: var(--canary); }
+    .phase-verify { background: rgba(234,179,8,0.2); color: #eab308; }
+    .phase-rollout { background: rgba(37,99,235,0.2); color: var(--stable); }
+    .version-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .version-item {
+      padding: 1rem;
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+      border-left: 4px solid var(--stable);
+    }
+    .version-item.canary { border-left-color: var(--canary); }
+    .version-item .name { font-size: 0.8rem; color: var(--muted); }
+    .version-item .val { font-size: 1.1rem; font-weight: 600; margin-top: 0.25rem; }
+    .services { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .svc { padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.9rem; }
+    .svc.ok { background: rgba(22,163,74,0.2); color: var(--canary); }
+    .svc.error, .svc.unreachable { background: rgba(239,68,68,0.2); color: #ef4444; }
+    .pulse { animation: pulse 2s infinite; }
+    @keyframes pulse { 50% { opacity: 0.7; } }
+  </style>
+</head>
+<body>
+  <h1>Boutique Canary Deployment</h1>
+  <p class="subtitle">Harness pipeline visualization — Deploy to Prod (K8sCanaryDeploy 5%)</p>
+
+  <div class="card">
+    <h2>Pipeline Stage</h2>
+    <span id="phase-badge" class="phase-badge phase-canary">Canary Phase (5%)</span>
+    <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--muted);">
+      Mirrors Harness Deploy to Prod: Canary 5% → Verification → Full Rollout
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Traffic Split</h2>
+    <div class="traffic-bar">
+      <div id="bar-stable" class="traffic-stable" style="width: 95%"></div>
+      <div id="bar-canary" class="traffic-canary" style="width: 5%"></div>
+    </div>
+    <div class="traffic-labels">
+      <span class="label-stable">Stable <span id="pct-stable">95</span>%</span>
+      <span class="label-canary">Canary <span id="pct-canary">5</span>%</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Current Request</h2>
+    <div class="version-grid">
+      <div class="version-item" id="version-card">
+        <div class="name">Version</div>
+        <div class="val" id="version">—</div>
+      </div>
+      <div class="version-item" id="variant-card">
+        <div class="name">Variant</div>
+        <div class="val" id="variant">—</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Backend Services</h2>
+    <div class="services" id="services">—</div>
+  </div>
+
+  <script>
+    function renderServices(services) {
+      const el = document.getElementById('services');
+      el.innerHTML = Object.entries(services || {}).map(([name, status]) =>
+        `<span class="svc ${status}">${name}: ${status}</span>`
+      ).join('') || '—';
+    }
+    function update(data) {
+      document.getElementById('version').textContent = data.version || '—';
+      document.getElementById('variant').textContent = data.variant || '—';
+      document.getElementById('variant-card').classList.toggle('canary', data.variant === 'canary');
+      const cw = data.canaryWeight ?? 5;
+      const sw = 100 - cw;
+      document.getElementById('bar-stable').style.width = sw + '%';
+      document.getElementById('bar-canary').style.width = cw + '%';
+      document.getElementById('pct-stable').textContent = sw;
+      document.getElementById('pct-canary').textContent = cw;
+      renderServices(data.services);
+    }
+    async function poll() {
+      try {
+        const r = await fetch('/api/status');
+        const data = await r.json();
+        update(data);
+      } catch (e) {
+        update({ version: '—', variant: '—', services: {} });
+      }
+    }
+    poll();
+    setInterval(poll, 2000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "boutique.fullname" . }}-frontend-stable
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "boutique.frontendStableSelectorLabels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.frontend.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "boutique.frontendStableSelectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "boutique.frontendStableSelectorLabels" . | nindent 8 }}
+        version: {{ .Values.stable.image.tag | quote }}
+    spec:
+      containers:
+        - name: frontend
+          image: "{{ .Values.stable.image.repository }}:{{ .Values.stable.image.tag }}"
+          imagePullPolicy: {{ .Values.stable.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.frontend.port }}
+              protocol: TCP
+          env:
+            - name: PORT
+              value: {{ .Values.frontend.port | quote }}
+            - name: APP_VERSION
+              value: {{ .Values.stable.image.tag | quote }}
+            - name: VARIANT
+              value: "stable"
+            - name: CANARY_WEIGHT
+              value: {{ .Values.canary.weight | quote }}
+            - name: PRODUCTCATALOG_URL
+              value: "http://{{ include "boutique.fullname" . }}-productcatalog:{{ .Values.productcatalog.port }}"
+            - name: CHECKOUT_URL
+              value: "http://{{ include "boutique.fullname" . }}-checkout:{{ .Values.checkout.port }}"
+          resources:
+            {{- toYaml .Values.frontend.resources | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /api/status
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/status
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5

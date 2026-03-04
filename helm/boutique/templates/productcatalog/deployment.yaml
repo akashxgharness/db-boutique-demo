@@ -1,0 +1,47 @@
+{{- if .Values.productcatalog.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "boutique.fullname" . }}-productcatalog
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "boutique.productcatalogSelectorLabels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.productcatalog.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "boutique.productcatalogSelectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "boutique.productcatalogSelectorLabels" . | nindent 8 }}
+        version: {{ .Values.productcatalog.image.tag | quote }}
+    spec:
+      containers:
+        - name: productcatalog
+          image: "{{ .Values.productcatalog.image.repository }}:{{ .Values.productcatalog.image.tag }}"
+          imagePullPolicy: {{ .Values.productcatalog.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.productcatalog.port }}
+              protocol: TCP
+          env:
+            - name: PORT
+              value: {{ .Values.productcatalog.port | quote }}
+            - name: APP_VERSION
+              value: {{ .Values.productcatalog.image.tag | quote }}
+          resources:
+            {{- toYaml .Values.productcatalog.resources | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 5
+{{- end }}

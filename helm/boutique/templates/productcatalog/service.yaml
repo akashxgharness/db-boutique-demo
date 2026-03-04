@@ -1,0 +1,18 @@
+{{- if .Values.productcatalog.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "boutique.fullname" . }}-productcatalog
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "boutique.productcatalogSelectorLabels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.productcatalog.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "boutique.productcatalogSelectorLabels" . | nindent 4 }}
+{{- end }}
