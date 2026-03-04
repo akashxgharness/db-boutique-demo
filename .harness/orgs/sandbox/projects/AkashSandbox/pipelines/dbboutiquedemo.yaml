@@ -70,3 +70,44 @@ pipeline:
                         caching: true
                         dockerfile: services/checkout/Dockerfile
                         context: services/checkout
+    - stage:
+        name: Deploy to Dev
+        identifier: Deploy_to_Dev
+        description: ""
+        type: Deployment
+        spec:
+          deploymentType: Kubernetes
+          service:
+            serviceRef: myboutique
+            serviceInputs:
+              serviceDefinition:
+                type: Kubernetes
+                spec:
+                  artifacts:
+                    primary: {}
+          environment:
+            environmentRef: dev1
+            deployToAll: false
+            infrastructureDefinitions:
+              - identifier: ekscluster
+          execution:
+            steps:
+              - step:
+                  type: K8sCanaryDeploy
+                  name: Canary Deployment
+                  identifier: Canary_Deployment
+                  spec:
+                    skipDryRun: false
+                    instanceSelection:
+                      type: Count
+                      spec:
+                        count: 1
+                  timeout: 10m
+            rollbackSteps: []
+        tags: {}
+        failureStrategies:
+          - onFailure:
+              errors:
+                - AllErrors
+              action:
+                type: StageRollback
