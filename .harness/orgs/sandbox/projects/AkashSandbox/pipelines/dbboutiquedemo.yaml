@@ -99,9 +99,9 @@ pipeline:
                   spec:
                     skipDryRun: false
                     instanceSelection:
-                      type: Count
                       spec:
-                        count: 1
+                        percentage: 20
+                      type: Percentage
                   timeout: 10m
             rollbackSteps: []
         tags: {}
