@@ -234,6 +234,10 @@ pipeline:
                         timeout: 10m
                         spec:
                           skipDryRun: false
+                          pruningEnabled: false
+                        when:
+                          stageStatus: Success
+                          condition: "false"
             rollbackSteps:
               - step:
                   name: Canary Delete
