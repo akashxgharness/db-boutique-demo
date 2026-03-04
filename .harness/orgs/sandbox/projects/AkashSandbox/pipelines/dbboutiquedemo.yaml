@@ -38,7 +38,7 @@ pipeline:
                       identifier: build_stable_frontend
                       spec:
                         connectorRef: Akash_Docker_Hub
-                        repo: myfirstrepo
+                        repo: eks-config-ui
                         tags:
                           - 1.0.<+pipeline.sequenceId>
                           - stable
@@ -52,7 +52,7 @@ pipeline:
                       identifier: build_product_catalog
                       spec:
                         connectorRef: Akash_Docker_Hub
-                        repo: myfirstrepo
+                        repo: eks-config-ui
                         tags:
                           - 1.0<+pipeline.sequenceId>
                         caching: true
@@ -64,7 +64,7 @@ pipeline:
                       identifier: build_checkout
                       spec:
                         connectorRef: Akash_Docker_Hub
-                        repo: myfirstrepo
+                        repo: eks-config-ui
                         tags:
                           - 1.0<+pipeline.sequenceId>
                         caching: true
