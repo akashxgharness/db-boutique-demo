@@ -31,16 +31,39 @@ pipeline:
             spec: {}
           execution:
             steps:
-              - step:
-                  type: BuildAndPushDockerRegistry
-                  name: build stable frontend
-                  identifier: build_stable_frontend
-                  spec:
-                    connectorRef: Akash_Docker_Hub
-                    repo: akashxg/myfirstrepo
-                    tags:
-                      - 1.0.<+pipeline.sequenceId>
-                      - stable
-                      - canary
-                    caching: true
-                    dockerfile: services/frontend/Dockerfile
+              - parallel:
+                  - step:
+                      type: BuildAndPushDockerRegistry
+                      name: build stable frontend
+                      identifier: build_stable_frontend
+                      spec:
+                        connectorRef: Akash_Docker_Hub
+                        repo: akashxg/myfirstrepo
+                        tags:
+                          - 1.0.<+pipeline.sequenceId>
+                          - stable
+                          - canary
+                        caching: true
+                        dockerfile: services/frontend/Dockerfile
+                  - step:
+                      type: BuildAndPushDockerRegistry
+                      name: build product catalog
+                      identifier: build_product_catalog
+                      spec:
+                        connectorRef: Akash_Docker_Hub
+                        repo: myfirstrepo
+                        tags:
+                          - 1.0<+pipeline.sequenceId>
+                        caching: true
+                        dockerfile: services/productcatalog/Dockerfile
+                  - step:
+                      type: BuildAndPushDockerRegistry
+                      name: build checkout
+                      identifier: build_checkout
+                      spec:
+                        connectorRef: Akash_Docker_Hub
+                        repo: myfirstrepo
+                        tags:
+                          - 1.0<+pipeline.sequenceId>
+                        caching: true
+                        dockerfile: services/checkout/Dockerfile
