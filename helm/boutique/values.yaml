@@ -1,25 +1,15 @@
-# Boutique Helm Chart - mirrors Harness End2End Delivery Pipeline
-# Deploy to Prod uses K8sCanaryDeploy with 5% canary
+# Boutique Helm Chart - simplified deployment (no canary)
 
 canary:
-  enabled: true
-  weight: 5  # mirrors pipeline's instanceSelection.percentage: 5
-  image:
-    repository: boutique-web-ui
-    tag: canary
-    pullPolicy: IfNotPresent
-
-stable:
-  image:
-    repository: boutique-web-ui
-    tag: stable
-    pullPolicy: IfNotPresent
+  enabled: false
 
 frontend:
   replicaCount: 2
-  canary:
-    replicaCount: 1
   port: 8080
+  image:
+    repository: akashxg/eks-config-ui
+    tag: frontend
+    pullPolicy: IfNotPresent
   resources:
     limits:
       cpu: 200m
@@ -33,8 +23,8 @@ productcatalog:
   replicaCount: 1
   port: 3550
   image:
-    repository: boutique-productcatalog
-    tag: "1.0.0"
+    repository: akashxg/eks-config-ui
+    tag: catalog
     pullPolicy: IfNotPresent
   resources:
     limits:
@@ -46,8 +36,8 @@ checkout:
   replicaCount: 1
   port: 5050
   image:
-    repository: boutique-checkout
-    tag: "1.0.0"
+    repository: akashxg/eks-config-ui
+    tag: checkout
     pullPolicy: IfNotPresent
   resources:
     limits:
