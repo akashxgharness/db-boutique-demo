@@ -155,7 +155,7 @@ pipeline:
                         matchAnyCondition: true
                         conditions: []
                     connectorRef: akashSNOW
-                    ticketNumber: <+pipeline.stages.Deploy_to_Dev.spec.execution.steps.Change_Mgmt.steps.ServiceNow_Create_Ticket.ticket.ticketNumber>
+                    ticketNumber: <+pipeline.stages.Deploy_to_Dev.spec.execution.steps.ServiceNow_Create_Ticket.ticket.ticketNumber>
                     retryInterval: 1m
                     ticketType: change_request
               - step:
